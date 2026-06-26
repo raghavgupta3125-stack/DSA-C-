@@ -1,0 +1,178 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <limits>
+
+using namespace std;
+
+const int ROWS = 6;
+const int COLS = 7;
+
+class ConnectFour {
+private:
+    vector<vector<char>> board;
+    char currentPlayer;
+
+public:
+    ConnectFour() {
+        board = vector<vector<char>>(ROWS, vector<char>(COLS, '.'));
+        currentPlayer = 'X';
+    }
+
+    void printBoard() {
+        cout << "\n";
+     
+        cout << " ";
+        for (int c = 0; c < COLS; c++) {
+            cout << " " << (c + 1) << " ";
+        }
+        cout << "\n";
+
+        for (int r = 0; r < ROWS; r++) {
+            cout << "|";
+            for (int c = 0; c < COLS; c++) {
+                char symbol = board[r][c];
+                cout << " " << symbol << " ";
+                if (c != COLS - 1) cout << "";
+            }
+            cout << "|\n";
+        }
+        cout << " ";
+        for (int c = 0; c < COLS; c++) cout << "---";
+        cout << "\n";
+    }
+
+    bool isColumnFull(int col) {
+        return board[0][col] != '.';
+    }
+
+    bool isBoardFull() {
+        for (int c = 0; c < COLS; c++) {
+            if (!isColumnFull(c)) return false;
+        }
+        return true;
+    }
+
+
+    int dropPiece(int col) {
+        for (int r = ROWS - 1; r >= 0; r--) {
+            if (board[r][col] == '.') {
+                board[r][col] = currentPlayer;
+                return r;
+            }
+        }
+        return -1;
+    }
+
+    bool checkWin(int row, int col) {
+        char p = board[row][col];
+
+       
+        int directions[4][2] = { {0, 1}, {1, 0}, {1, 1}, {1, -1} };
+
+        for (auto& dir : directions) {
+            int dr = dir[0];
+            int dc = dir[1];
+            int count = 1;
+
+         
+            int r = row + dr, c = col + dc;
+            while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == p) {
+                count++;
+                r += dr;
+                c += dc;
+            }
+
+        
+            r = row - dr;
+            c = col - dc;
+            while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == p) {
+                count++;
+                r -= dr;
+                c -= dc;
+            }
+
+            if (count >= 4) return true;
+        }
+
+        return false;
+    }
+
+    void switchPlayer() {
+        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+    }
+
+    char getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    void play() {
+        cout << "=========================================\n";
+        cout << "          CONNECT FOUR GAME\n";
+        cout << "=========================================\n";
+        cout << "Player X and Player O take turns.\n";
+        cout << "Enter a column number (1-" << COLS << ") to drop your piece.\n";
+        cout << "Get 4 in a row (horizontally, vertically, or diagonally) to win!\n";
+
+        bool gameOver = false;
+
+        while (!gameOver) {
+            printBoard();
+            cout << "\nPlayer " << currentPlayer << "'s turn. Choose a column (1-" << COLS << "): ";
+
+            int colInput;
+            if (!(cin >> colInput)) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+
+            int col = colInput - 1;
+
+            if (col < 0 || col >= COLS) {
+                cout << "Invalid column. Please choose between 1 and " << COLS << ".\n";
+                continue;
+            }
+
+            if (isColumnFull(col)) {
+                cout << "Column " << colInput << " is full. Choose another column.\n";
+                continue;
+            }
+
+            int row = dropPiece(col);
+
+            if (checkWin(row, col)) {
+                printBoard();
+                cout << "\n*****************************************\n";
+                cout << "   Player " << currentPlayer << " WINS! Congratulations!\n";
+                cout << "*****************************************\n";
+                gameOver = true;
+            } else if (isBoardFull()) {
+                printBoard();
+                cout << "\nIt's a DRAW! The board is full.\n";
+                gameOver = true;
+            } else {
+                switchPlayer();
+            }
+        }
+
+        cout << "\nThanks for playing Connect Four!\n";
+    }
+};
+
+int main() {
+    char playAgain;
+
+    do {
+        ConnectFour game;
+        game.play();
+
+        cout << "\nPlay again? (y/n): ";
+        cin >> playAgain;
+
+    } while (playAgain == 'y' || playAgain == 'Y');
+
+    cout << "Goodbye!\n";
+    return 0;
+}
